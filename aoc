@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+# vim: filetype=python
+
+import argparse
+import importlib
+import math
+import os
+import os.path
+import sys
+import unittest
+
+import requests
+
+YEAR = 2022
+
+def download_input(day):
+    if not os.path.exists('session'):
+        raise Exception('Missing session token file')
+
+    with open('session', 'tr') as token_file:
+        session_token = token_file.read().strip()
+
+    input_url = f'https://adventofcode.com/{YEAR}/day/{day}/input'
+    cookies = {'session': session_token}
+
+    with requests.get(input_url, cookies=cookies) as resp:
+        resp.raise_for_status()
+        return resp.content
+
+
+def fetch_input(day, forced=False):
+    input_dir = 'inputs'
+    if not os.path.exists(input_dir):
+        os.mkdir(input_dir)
+
+    input_file = os.path.join(input_dir, f'{day}')
+    if forced or not os.path.exists(input_file):
+        inp = download_input(day)
+        with open(input_file, 'wb') as input_handle:
+            input_handle.write(inp)
+
+    with open(input_file, 'rt') as input_handle:
+        return input_handle.read()
+
+
+def fetch_example(day):
+    example_dir = 'examples'
+    if not os.path.exists(example_dir):
+        os.mkdir(example_dir)
+
+    example_file = os.path.join(example_dir, f'{day}')
+
+    if not os.path.exists(example_file):
+        raise Exception(f'Could not find example file at {example_file}')
+
+    with open(example_file, 'rt') as example_handle:
+        return example_handle.read()
+
+
+def check_day(day):
+    if not 1 <= day <= 25:
+        raise Exception(f'Invalid day {day}')
+
+
+def cmd_run(args):
+    check_day(args.day)
+
+    if not args.part1 and not args.part2:
+        args.part1 = True
+        args.part2 = True
+
+    module_name = f'days.day{args.day}'
+    module = importlib.import_module(module_name)
+
+    if args.cmd == 'run':
+        inp = fetch_input(args.day, args.force_fetch)
+    else:
+        inp = fetch_example(args.day)
+
+    if hasattr(module, 'parse'):
+        inp = module.parse(inp)
+
+    if hasattr(module, 'part1') and args.part1:
+        print(module.part1(inp))
+
+    if hasattr(module, 'part2') and args.part2:
+        print(module.part2(inp))
+
+
+def cmd_dump(args):
+    check_day(args.day)
+    if not args.example:
+        inp = fetch_input(args.day, args.force_fetch)
+    else:
+        inp = fetch_example(args.day)
+
+    lines = inp.splitlines()
+    if not lines:
+        return
+
+    if args.line_numbers:
+        num_width = int(math.log10(len(lines))+1)
+        for row, line in enumerate(lines):
+            print(f'{row:>{num_width}}: {line}')
+    else:
+        for line in lines:
+            print(line)
+
+
+def cmd_test(args):
+    check_day(args.day)
+
+    module_name = f'days.day{args.day}'
+    module = importlib.import_module(module_name)
+
+    loader = unittest.TestLoader()
+    test_suit = loader.loadTestsFromModule(module)
+
+    verbosity = 2 if args.verbose else 1
+    runner = unittest.TextTestRunner(verbosity=verbosity)
+    runner.run(test_suit)
+
+def parser_add_run_args(parser):
+    parser.add_argument('day', type=int)
+    parser.add_argument('-1', '--part1', action='store_true',
+        help='Run part1')
+    parser.add_argument('-2', '--part2', action='store_true',
+        help='Run part2')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Advent of code utility')
+    subparsers = parser.add_subparsers(dest='cmd', required=True)
+
+    parser_run = subparsers.add_parser('run', help='Run the solution')
+    parser_run.add_argument('-f', '--force-fetch', action='store_true',
+            help='Forces the download of the input')
+    parser_add_run_args(parser_run)
+
+    parser_example = subparsers.add_parser('example',
+            help='Run the solution with example input')
+    parser_add_run_args(parser_example)
+
+    parser_dump = subparsers.add_parser('dump', help='Dump the input')
+    parser_dump.add_argument('day', type=int)
+    parser_dump.add_argument('-f', '--force-fetch', action='store_true',
+            help='Forces the download of the input')
+    parser_dump.add_argument('-e', '--example', action='store_true',
+            help='Dump the example')
+    parser_dump.add_argument('-l', '--line-numbers', action='store_true',
+            help='Print line numbers')
+
+    parser_test = subparsers.add_parser('test', help='Run unittests')
+    parser_test.add_argument('day', type=int)
+    parser_test.add_argument('-v', '--verbose', action='store_true')
+
+    args = parser.parse_args()
+    if args.cmd in ('run', 'example'):
+        cmd_run(args)
+    elif args.cmd == 'dump':
+        cmd_dump(args)
+    elif args.cmd == 'test':
+        cmd_test(args)
