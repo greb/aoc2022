@@ -12,18 +12,23 @@ import unittest
 import requests
 
 YEAR = 2022
+SESSION_FILE = 'session'
 
 def download_input(day):
-    if not os.path.exists('session'):
+    if not os.path.exists(SESSION_FILE):
         raise Exception('Missing session token file')
 
-    with open('session', 'tr') as token_file:
+    with open(SESSION_FILE, 'tr') as token_file:
         session_token = token_file.read().strip()
 
     input_url = f'https://adventofcode.com/{YEAR}/day/{day}/input'
     cookies = {'session': session_token}
 
-    with requests.get(input_url, cookies=cookies) as resp:
+    headers = {}
+    headers['User-Agent'] = ('https://github.com/greb/aoc2022 '
+                            'contact: reddit.com/u/BoringEntropist')
+
+    with requests.get(input_url, cookies=cookies, headers=headers) as resp:
         resp.raise_for_status()
         return resp.content
 
