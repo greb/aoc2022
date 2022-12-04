@@ -19,5 +19,5 @@ def part1(sections):
 def part2(sections):
     cnt = 0
     for a,b,c,d in sections:
-        cnt += a <= c <= b or a <= d <= b or c <= a <= d or c <= b <= d
+        cnt += a <= d and c <= b
     return cnt
