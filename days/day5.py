@@ -7,8 +7,9 @@ def parse(inp):
     for line in chunks[0].splitlines():
         crates = line[1::4]
         stacks.append(crates)
-    stacks = [[c for c in reversed(crates) if c != ' ']
-              for crates in zip(*stacks[:-1])]
+
+    stacks = [[c for c in crates[1:] if c != ' ']
+               for crates in zip(*reversed(stacks))]
 
     moves = []
     for line in chunks[1].splitlines():
