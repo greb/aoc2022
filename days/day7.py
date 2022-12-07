@@ -1,44 +1,34 @@
 def parse(inp):
-    # First two lines are always the same
-    lines = iter(inp.splitlines()[2:])
+    stack = []
+    sizes = []
 
-    dir_sizes = []
-    total_size = parse_dirs(lines, dir_sizes)
-    return total_size, dir_sizes
+    def up():
+        size = stack.pop()
+        sizes.append(size)
+        if stack:
+            stack[-1] += size
 
+    for line in inp.splitlines():
+        match line.split():
+            case '$', 'cd', '..': up()
+            case '$', 'cd', _: stack.append(0)
+            case '$', _: pass
+            case 'dir', _: pass
+            case size, _: stack[-1] += int(size)
 
-def parse_dirs(it, dir_sizes):
-    size = 0
+    while stack:
+        up()
 
-    try:
-        while True:
-            tokens = next(it).split()
-            if tokens[0] == '$':
-                if tokens[1] == 'cd':
-                    if tokens[2] == '..':
-                        return size
-                    else:
-                        sub_size = parse_dirs(it, dir_sizes)
-                        dir_sizes.append(sub_size)
-                        size += sub_size
-            elif tokens[0] != 'dir':
-                size += int(tokens[0])
-
-    except StopIteration:
-        pass
-
-    return size
+    return sizes
 
 
 def part1(sizes):
-    _, dir_sizes = sizes
     size_limit = 100_000
-    return sum(s for s in dir_sizes if s < size_limit)
+    return sum(s for s in sizes if s < size_limit)
 
 
 def part2(sizes):
-    total_size, dir_sizes = sizes
-    min_size = total_size - 40_000_000
-    return min(s for s in dir_sizes if s > min_size)
+    min_size = max(sizes) - 40_000_000
+    return min(s for s in sizes if s > min_size)
 
 
