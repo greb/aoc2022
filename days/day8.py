@@ -24,8 +24,9 @@ def part1(grid):
 
                 if all(t < tree for t in trees):
                     visited.add((x,y))
-    return len(visited)
+                    break
 
+    return len(visited)
 
 
 def part2(grid):
