@@ -7,7 +7,7 @@ def parse(inp):
 
 
 def part1(grid):
-    visited = set()
+    visited = 0
     w, h = len(grid[0]), len(grid)
 
     for y, row in enumerate(grid):
@@ -23,10 +23,10 @@ def part1(grid):
                     ty += dy
 
                 if all(t < tree for t in trees):
-                    visited.add((x,y))
+                    visited += 1
                     break
 
-    return len(visited)
+    return visited
 
 
 def part2(grid):
