@@ -14,16 +14,12 @@ def move_knot(knot, d):
 
 def follow_knot(head, tail):
     dx, dy = (a-b for a,b in zip(head, tail))
-    if abs(dx) > 1:
-        dx = dx+1 if dx < 0 else dx-1
-        if abs(dy) > 1:
-            dy = dy+1 if dy < 0 else dy-1
-        return move_knot(tail, (dx, dy))
 
-    elif abs(dy) > 1:
-        dy = dy+1 if dy < 0 else dy-1
+    if abs(dx) > 1 or abs(dy) > 1:
         if abs(dx) > 1:
             dx = dx+1 if dx < 0 else dx-1
+        if abs(dy) > 1:
+            dy = dy+1 if dy < 0 else dy-1
         return move_knot(tail, (dx, dy))
 
     return tail
