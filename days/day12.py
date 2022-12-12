@@ -35,11 +35,14 @@ def get_elevation(node, grid):
     return grid[y][x]
 
 
-def shortest_path(start, end, grid):
+def shortest_path(starts, end, grid):
     dims = len(grid[0]), len(grid)
 
-    dists = {start: 0}
-    queue = [(0, start)]
+    dists = {}
+    queue = []
+    for start in starts:
+        dists[start] = 0
+        queue.append((0, start))
 
     while queue:
         dist, node = heapq.heappop(queue)
@@ -61,19 +64,16 @@ def shortest_path(start, end, grid):
 
 def part1(inp):
     start, end, grid = inp
-    return shortest_path(start, end, grid)
+    return shortest_path([start], end, grid)
 
 
 def part2(inp):
     _, end, grid = inp
 
-    paths = []
+    starts = []
     for y, row in enumerate(grid):
         for x, tile in enumerate(row):
             if tile == 0:
-                start = (x,y)
-                path = shortest_path(start, end, grid)
-                if path:
-                    paths.append(path)
+                starts.append((x,y))
 
-    return min(paths)
+    return shortest_path(starts, end, grid)
