@@ -44,6 +44,20 @@ def debug_grid(grid):
     print()
 
 
+def drop_stone(grid, src, bottom):
+    x, y = src
+
+    while y < bottom:
+        for move in [(x, y+1), (x-1,y+1), (x+1,y+1)]:
+            if move not in grid:
+                x,y = move
+                break
+        else:
+            return True, (x,y)
+
+    return False, (x,y)
+
+
 def part1(grid):
     grid, bottom = grid
     grid = grid.copy()
@@ -51,16 +65,13 @@ def part1(grid):
     src = (500, 0)
     cnt = 0
 
-    x, y = src
-    while y < bottom:
-        for move in [(x, y+1), (x-1,y+1), (x+1,y+1)]:
-            if move not in grid:
-                x,y = move
-                break
-        else:
-            cnt += 1
-            grid[(x,y)] = 'o'
-            x,y = src
+    while True:
+        has_stopped, pos = drop_stone(grid, src, bottom)
+        if not has_stopped:
+            break
+        grid[pos] = 'o'
+        cnt += 1
+
     return cnt
 
 
@@ -69,25 +80,12 @@ def part2(grid):
 
     src = (500, 0)
     cnt = 0
-
-    x,y = src
     while True:
-        if y == bottom + 1:
-            cnt += 1
-            grid[(x,y)] = 'o'
-            x,y = src
-            continue
-
-        for move in [(x, y+1), (x-1,y+1), (x+1,y+1)]:
-            if move not in grid:
-                x,y = move
-                break
-        else:
-            cnt += 1
-            grid[(x,y)] = 'o'
-            if (x,y) == src:
-                break
-            x,y = src
+        _, pos = drop_stone(grid, src, bottom+1)
+        grid[pos] = 'o'
+        cnt += 1
+        if pos == src:
+            break
 
     return cnt
 
