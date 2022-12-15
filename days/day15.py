@@ -6,19 +6,15 @@ def parse(inp):
     sensors = []
     for line in inp.splitlines():
         coords = [int(c) for c in re.findall(r'[xy]=(-?\d+)', line)]
-        sensor = tuple(utils.chunk_iter(coords, 2))
-        sensors.append(sensor)
+        sensor, beacon = tuple(utils.chunk_iter(coords, 2))
+        dist = sum(abs(a-b) for a,b in zip(sensor, beacon))
+        sensors.append((sensor, beacon, dist))
     return sensors
-
-
-def manhatten_dist(src, dst):
-    return abs(src[0]-dst[0]) + abs(src[1]-dst[1])
 
 
 def get_sections(sensors, y):
     sections = []
-    for (sx,sy), (bx,by) in sensors:
-        dist = manhatten_dist((sx,sy), (bx,by))
+    for (sx,sy), (bx,by), dist in sensors:
         dx = dist - abs(sy - y)
         if dx> 0:
             section = sx-dx, sx+dx
@@ -41,7 +37,7 @@ def get_sections(sensors, y):
 def part1(sensors):
     y_target = 2_000_000
     overlap_beacons = set()
-    for _, (bx,by) in sensors:
+    for _, (bx,by), dist in sensors:
         if by == y_target:
             overlap_beacons.add(bx)
 
