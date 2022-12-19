@@ -26,6 +26,15 @@ def solve(cost, time):
         if t==0:
             continue
 
+        # Prunes the states that can't possible catch up to the best score.
+        # Under optimal condiations we could add a geode cracker at every
+        # step yielding a geometrical grow curve (in form of triangular
+        # numbers). Even if, under those circumstance, it isn't possible to
+        # beat the current best score until the time runs out we can abort
+        # the search early.
+        if geo + t*r_geo + ((t-1)*t // 2) <= best:
+            continue
+
         # Don't produce more robots than necessary
         r_ore = min(r_ore, max_r_ore)
         r_clay = min(r_clay, c_obs1)
